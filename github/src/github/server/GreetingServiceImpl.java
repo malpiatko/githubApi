@@ -50,16 +50,18 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements
 		String result = "";
 		for(GHRepository rep : reps){
 			String lang = rep.getLanguage();
-			Integer count;
-			if(languages.get(lang) == null){
-				count = 0;
-			} else {
-				count = languages.get(lang) + 1;
-			}
-			languages.put(lang, count);
-			if(count > max){
-				max = count;
-				result = lang;
+			if(lang != null){
+				Integer count;
+				if(languages.get(lang) == null){
+					count = 1;
+				} else {
+					count = languages.get(lang) + 1;
+				}
+				languages.put(lang, count);
+				if(count > max){
+					max = count;
+					result = lang;
+				}
 			}
 		}
 		return result;
