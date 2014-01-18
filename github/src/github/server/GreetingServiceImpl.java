@@ -11,46 +11,55 @@ import org.kohsuke.github.GHUser;
 import org.kohsuke.github.GitHub;
 
 import github.client.GreetingService;
-import github.shared.FieldVerifier;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
-/**
- * The server side implementation of the RPC service.
- */
 @SuppressWarnings("serial")
 public class GreetingServiceImpl extends RemoteServiceServlet implements
 		GreetingService {
 
+	private static final String NO_LANGUAGES = "No known languages for the given user.";
+	private static final String NO_REPOSITORIES = "Given user has no repositories.";
+	private static final String NO_USERNAME = "No user with the given username.";
 
+	/* (non-Javadoc)
+	 * @see github.client.GreetingService#greetServer(java.lang.String)
+	 */
 	public String greetServer(String input) throws IOException{
 		GitHub github = GitHub.connectAnonymously();
 		GHUser user;
 		try{
 			user = github.getUser(input);
 		} catch(FileNotFoundException exception) {
-			return "No user with the given username.";
+			return NO_USERNAME;
 		}
 		Collection<GHRepository> reps = getRepositories(user);
 		if(reps.isEmpty()) {
-			return "Given user has no repositories.";
+			return NO_REPOSITORIES;
 		}
-		System.out.printf("Heeeere!1");
 		String lang = getMostCommonLanguage(reps);
-		System.out.printf("Heeeere!2");
 		if(lang == null) {
-			return "No known languages for the given user.";
+			return NO_LANGUAGES;
 		}
 		return lang;
 	}
 	
+	/**
+	 * @param user - The username of a github user.
+	 * @return - collection of repositories for the given user
+	 * @throws IOException
+	 */
 	private Collection<GHRepository> getRepositories(GHUser user) throws IOException{
 		return user.getRepositories().values();
 	}
 	
+	/**
+	 * @param reps -  Collection of repositories.
+	 * @return The language which occurs most in the repositories. 
+	 */
 	private String getMostCommonLanguage(Collection<GHRepository> reps){
 		Map<String, Integer> languages = new HashMap<String, Integer>();
 		int max = 0;
-		GHRepository result = null;
+		String result = null;
 		for(GHRepository rep : reps){
 			String lang = rep.getLanguage();
 			if(lang != null){
@@ -61,18 +70,13 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements
 					count = languages.get(lang) + 1;
 				}
 				languages.put(lang, count);
-				//note that no hazard of null pointer exception
-				if((count == max && rep.getSize() > result.getSize()) ||
-						count > max){
+				if( count > max){
 					max = count;
-					result = rep;
+					result = lang;
 				}
 			}
 		}
-		if(result == null){
-			return null;
-		}
-		return result.getLanguage();
+		return result;
 		
 	}
 
