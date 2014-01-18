@@ -4,11 +4,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GHUser;
-import org.kohsuke.github.GitHub;
+import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.client.RequestException;
+import org.eclipse.egit.github.core.service.RepositoryService;
 
 import github.client.GreetingService;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -25,18 +26,17 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements
 	 * @see github.client.GreetingService#greetServer(java.lang.String)
 	 */
 	public String greetServer(String input) throws IOException{
-		GitHub github = GitHub.connectAnonymously();
-		GHUser user;
+		RepositoryService service = new RepositoryService();
+		List<Repository> reps;
 		try{
-			user = github.getUser(input);
-		} catch(FileNotFoundException exception) {
+			reps = service.getRepositories(input);
+		} catch(RequestException exception) {
 			return NO_USERNAME;
 		}
-		Collection<GHRepository> reps = getRepositories(user);
 		if(reps.isEmpty()) {
 			return NO_REPOSITORIES;
 		}
-		String lang = getMostCommonLanguage(reps);
+		String lang = getFavouriteLanguage(reps);
 		if(lang == null) {
 			return NO_LANGUAGES;
 		}
@@ -44,23 +44,14 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements
 	}
 	
 	/**
-	 * @param user - The username of a github user.
-	 * @return - collection of repositories for the given user
-	 * @throws IOException
-	 */
-	private Collection<GHRepository> getRepositories(GHUser user) throws IOException{
-		return user.getRepositories().values();
-	}
-	
-	/**
 	 * @param reps -  Collection of repositories.
 	 * @return The language which occurs most in the repositories. 
 	 */
-	private String getMostCommonLanguage(Collection<GHRepository> reps){
+	private String getFavouriteLanguage(List<Repository> reps){
 		Map<String, Integer> languages = new HashMap<String, Integer>();
 		int max = 0;
 		String result = null;
-		for(GHRepository rep : reps){
+		for(Repository rep : reps){
 			String lang = rep.getLanguage();
 			if(lang != null){
 				Integer count;
@@ -77,7 +68,6 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements
 			}
 		}
 		return result;
-		
 	}
 
 }
