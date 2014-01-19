@@ -1,8 +1,6 @@
 package github.server;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,12 +10,15 @@ import org.eclipse.egit.github.core.client.RequestException;
 import org.eclipse.egit.github.core.service.RepositoryService;
 
 import github.client.GreetingService;
+import github.shared.FieldVerifier;
+
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 @SuppressWarnings("serial")
 public class GreetingServiceImpl extends RemoteServiceServlet implements
 		GreetingService {
 
+	private static final String INVALID_USERNAME = "This is an invalid GitHub username.";
 	private static final String NO_LANGUAGES = "No known languages for the given user.";
 	private static final String NO_REPOSITORIES = "Given user has no repositories.";
 	private static final String NO_USERNAME = "No user with the given username.";
@@ -25,7 +26,12 @@ public class GreetingServiceImpl extends RemoteServiceServlet implements
 	/* (non-Javadoc)
 	 * @see github.client.GreetingService#greetServer(java.lang.String)
 	 */
-	public String greetServer(String input) throws IOException{
+	public String greetServer(String input) throws IllegalArgumentException, IOException{
+		if (!FieldVerifier.isValidUsername(input)) {
+			throw new IllegalArgumentException(
+					INVALID_USERNAME);
+		}
+		
 		RepositoryService service = new RepositoryService();
 		List<Repository> reps;
 		try{

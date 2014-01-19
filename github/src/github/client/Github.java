@@ -1,5 +1,7 @@
 package github.client;
 
+import github.shared.FieldVerifier;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -50,7 +52,7 @@ public class Github implements EntryPoint {
 		dialogVPanel.addStyleName("dialogVPanel");
 		dialogVPanel.add(new HTML("<b>Username:</b>"));
 		dialogVPanel.add(textToServerLabel);
-		dialogVPanel.add(new HTML("<br><b>Favourite languages:</b>"));
+		dialogVPanel.add(new HTML("<br><b>Favourite language:</b>"));
 		dialogVPanel.add(serverResponseLabel);
 		dialogVPanel.setHorizontalAlignment(VerticalPanel.ALIGN_RIGHT);
 		dialogVPanel.add(closeButton);
@@ -81,6 +83,10 @@ public class Github implements EntryPoint {
 			private void sendUsernameToServer() {
 				errorLabel.setText("");
 				String textToServer = nameField.getText();
+				if (!FieldVerifier.isValidUsername(textToServer)) {
+					errorLabel.setText("This is an invalid GitHub username");
+					return;
+				}
 
 				sendButton.setEnabled(false);
 				textToServerLabel.setText(textToServer);

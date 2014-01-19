@@ -1,1 +1,4 @@
-Simple web application that for a given GitHub username returns a guess of the users favourite language.
+A very simple web application that for a given GitHub username returns a guess of the users favourite language.
+It uses the egit-github library (https://github.com/eclipse/egit-github).
+For easy access the application has been deployed and can be viewed here: http://githubapigwt.appspot.com/
+Technologies: Google Web Toolkit, App Engine
